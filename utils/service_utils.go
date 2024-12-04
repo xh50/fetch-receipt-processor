@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"github.com/google/uuid"
+
 	"net/http"
 	"log"
 	"os/signal"
@@ -36,4 +38,10 @@ func ManualShutdown(server *http.Server) {
 	}
 
 	log.Println("Server exiting")
+}
+
+func GenerateID() uuid.UUID {
+	var id = uuid.New()
+	log.Printf("UUID Generated. %s\n", id)
+	return id
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fetch-receipt-processor/models"
+	"fetch-receipt-processor/utils"
 
 	"github.com/gin-gonic/gin"
 
@@ -80,7 +81,7 @@ func transferReceipt(rawReceipt models.RawReceipt) (models.Receipt, error) {
 	}
 	receipt.PurchaseTime = parseTime
 
-	receipt.ID = strconv.Itoa(len(holder) + 1)
+	receipt.ID = utils.GenerateID().String()
 	holder[receipt.ID] = receipt
 	log.Println("Receipt data object transfer finished.")
 	return receipt, nil
