@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	// "strings"
 )
 
 var holder = make(map[string]models.Receipt)
@@ -25,6 +26,10 @@ func GetReceiptByID(c *gin.Context) {
 	id := c.Param("id")
 	log.Printf("Get ID: %s\n", id)
 	c.String(http.StatusOK, id)
+}
+
+func GetAllReceipts(c *gin.Context) {
+	c.JSON(http.StatusOK, holder)
 }
 
 func CreateReceipt(c *gin.Context) {
@@ -63,23 +68,37 @@ func transferReceipt(rawReceipt models.RawReceipt) (models.Receipt, error) {
 	var receipt models.Receipt
 	price, err := strconv.ParseFloat(rawReceipt.Total, 64)
 	if err != nil {
-		log.Fatalln("price transfer error.", err.Error())
+		log.Fatalln("Price transfer error.", err.Error())
 		return receipt, err
 	}
 	receipt.Total = price
 	parsedDate, err := time.Parse(time.DateOnly, rawReceipt.PurchaseDate)
 	if err != nil {
-		log.Fatalln("date parsing error.", err.Error())
+		log.Fatalln("Date parsing error.", err.Error())
 		return receipt, err
 	}
 	receipt.PurchaseDate = parsedDate
 	var timeStr = "15:04"
 	parseTime, err := time.Parse(timeStr, rawReceipt.PurchaseTime)
 	if err != nil {
-		log.Fatalln("time parsing error.", err.Error())
+		log.Fatalln("Time parsing error.", err.Error())
 		return receipt, err
 	}
 	receipt.PurchaseTime = parseTime
+
+	// transfer item data objects
+	for i := range rawReceipt.Items {
+		var item models.Item
+		rawItem := &rawReceipt.Items[i]
+		p, e := strconv.ParseFloat(rawItem.Price, 64)
+		if e != nil {
+			log.Println("Item transfer error.", e.Error())
+			return receipt, e
+		}
+		item.Price = p
+		item.ShortDescription = rawItem.ShortDescription
+		receipt.Items = append(receipt.Items, item)
+	}
 
 	receipt.ID = utils.GenerateID().String()
 	holder[receipt.ID] = receipt

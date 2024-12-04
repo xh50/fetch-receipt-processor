@@ -8,6 +8,7 @@ import (
 
 func ReceiptRoutes(router *gin.Engine) {
 	router.GET("/receipts/:id/points", controllers.GetReceiptByID)
+	router.GET("receipts/all", controllers.GetAllReceipts)
 	router.POST("/receipts/process", controllers.CreateReceipt)
 	router.GET("/index/", controllers.IndexPage)
 	router.GET("/", controllers.IndexPage)
