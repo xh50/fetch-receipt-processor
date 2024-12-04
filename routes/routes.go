@@ -1,18 +1,13 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
+	"fetch-receipt-processor/controllers"
 
-	"log"
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 func ReceiptRoutes(router *gin.Engine) {
-	router.GET("/", indexPage)
-	router.GET("index", indexPage)
-}
-
-func indexPage(c *gin.Context) {
-	log.Println("Call Index Page")
-	c.String(http.StatusOK, "Index Page")
+	router.GET("/receipts/:id/points", controllers.GetReceiptByID)
+	router.GET("/index/", controllers.IndexPage)
+	router.GET("/", controllers.IndexPage)
 }
