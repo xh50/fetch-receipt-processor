@@ -19,6 +19,7 @@ func main() {
 	}
 	defer file.Close()
 	log.SetOutput(file)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	log.Println("Set log output to dev.log file")
 
 	// config the server on 8080

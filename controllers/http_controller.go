@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fetch-receipt-processor/models"
 	"fetch-receipt-processor/utils"
+	"fetch-receipt-processor/services"
 
 	"github.com/gin-gonic/gin"
 
@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	// "strings"
+	"encoding/json"
 )
 
 var holder = make(map[string]models.Receipt)
@@ -25,7 +25,22 @@ func GetReceiptByID(c *gin.Context) {
 	log.Println("Call GetReceiptByID")
 	id := c.Param("id")
 	log.Printf("Get ID: %s\n", id)
-	c.String(http.StatusOK, id)
+	if receipt, ok := holder[id]; ok {
+		log.Printf("Found receipt for ID: %s\n", receipt.ID)
+		point := services.CalculatePoints(receipt)
+		temp := make(map[string]int)
+		temp["point"] = point
+		response, err := json.Marshal(temp)
+		if err != nil {
+			log.Println("Build JSON error: ", err)
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+		c.JSON(http.StatusOK, string(response))
+	} else {
+		log.Printf("Do not find receipt for ID: %s\n", id)
+		c.JSON(http.StatusNotFound, "Do not find receipt with given ID")
+	}
 }
 
 func GetAllReceipts(c *gin.Context) {
@@ -34,7 +49,7 @@ func GetAllReceipts(c *gin.Context) {
 
 func CreateReceipt(c *gin.Context) {
 	var rawReceipt models.RawReceipt
-	
+	log.Println("Get receipt raw data. Start parsing..")
 	if err := c.ShouldBindJSON(&rawReceipt); err != nil {
 		log.Fatalln("Raw data parsing error.", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"Raw data parsing error.": err.Error()})
@@ -53,6 +68,7 @@ func CreateReceipt(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Build response error.": err.Error()})
 		return
 	}
+	log.Println("Create receipt successfully.")
 	c.JSON(http.StatusOK, response)
 }
 
@@ -66,6 +82,7 @@ func buildResponse(receipt models.Receipt) (string, error){
 
 func transferReceipt(rawReceipt models.RawReceipt) (models.Receipt, error) {
 	var receipt models.Receipt
+	receipt.Retailer = rawReceipt.Retailer
 	price, err := strconv.ParseFloat(rawReceipt.Total, 64)
 	if err != nil {
 		log.Fatalln("Price transfer error.", err.Error())
