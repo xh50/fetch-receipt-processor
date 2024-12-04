@@ -2,14 +2,13 @@ package main
 
 import (
 	"fetch-receipt-processor/routes"
+	"fetch-receipt-processor/utils"
 
 	"github.com/gin-gonic/gin"
 
 	"log"
 	"os"
 	"net/http"
-	"context"
-	// "time"
 )
 
 func main() {
@@ -36,6 +35,6 @@ func main() {
 	go server.ListenAndServe()
 	log.Println("Server start.")
 
-	server.Shutdown(context.Background())
-	log.Println("Server exiting")
+	utils.ManualShutdown(server)
+	log.Println("Server exit")
 }
